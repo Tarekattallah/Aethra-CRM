@@ -1,6 +1,14 @@
 # Deploy Aethra CRM
 
-The target architecture is a Vite frontend on Vercel, an Express API on Render, and application data plus uploaded files in MongoDB Atlas. These instructions describe configuration; they do not imply that a live deployment already exists.
+The deployed architecture is a Vite frontend on Vercel, an Express API on Render, and application data plus uploaded files in MongoDB Atlas.
+
+| Component | Deployment |
+| --- | --- |
+| Client portal | [aethra-crm.vercel.app](https://aethra-crm.vercel.app) |
+| API health | [Render health endpoint](https://aethra-crm-api-775g.onrender.com/api/health) |
+| Database and new uploads | MongoDB Atlas, dedicated `aethra_crm` database and GridFS bucket |
+
+The initial deployment starts without historical customer or project data. Administrator credentials and infrastructure secrets are not published in this repository. The production checks verified both existing administrator logins, their permission boundaries, cookie handling, and notification streaming through the frontend origin without creating customer or request records.
 
 ## 1. Prepare MongoDB Atlas
 

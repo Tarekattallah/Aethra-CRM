@@ -13,6 +13,7 @@
     <img alt="Arabic and English" src="https://img.shields.io/badge/Client_portal-Arabic_%2B_English-0B1426">
   </p>
   <p><a href="#quick-start">Quick start</a> · <a href="#workflow">Workflow</a> · <a href="#access-and-ownership">Permissions</a> · <a href="#documentation">Documentation</a></p>
+  <p><a href="https://aethra-crm.vercel.app">Live client portal</a> · <a href="https://aethra-crm-api-775g.onrender.com/api/health">API health</a> · <a href="docs/DEPLOYMENT.md">Deployment guide</a></p>
 </div>
 
 ## Overview
