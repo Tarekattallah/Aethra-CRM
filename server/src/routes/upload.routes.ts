@@ -6,6 +6,7 @@ import { hashToken } from '../services/upload.service.js';
 import { AuthRequest, optionalAuthenticate } from '../middlewares/auth.middleware.js';
 import { open, unlink } from 'node:fs/promises';
 import path from 'node:path';
+import { persistUpload, deleteStoredUpload } from '../services/file-storage.service.js';
 
 const router = Router();
 
@@ -27,7 +28,15 @@ router.post('/', optionalAuthenticate, upload.single('file'), async (req: AuthRe
     await unlink(req.file.path);
     res.status(400).json({success: false, message: 'محتوى الملف لا يطابق نوعه.'}); return;
   }
-  await Upload.create({ filename: req.file.filename, originalName: req.file.originalname, ownerId: req.user?._id, tokenHash: hashToken(uploadToken) });
+  const stored = await persistUpload(req.file);
+  try {
+    await Upload.create({ filename: req.file.filename, originalName: req.file.originalname, ownerId: req.user?._id, tokenHash: hashToken(uploadToken), ...stored });
+  } catch (error) {
+    if ('storageId' in stored && stored.storageId) await deleteStoredUpload(stored.storageId).catch(() => {});
+    await unlink(req.file.path).catch(() => {});
+    throw error;
+  }
+  if (stored.storage === 'mongodb') await unlink(req.file.path).catch(() => {});
   const fileInfo = {
     uploadToken,
     filename: req.file.filename,

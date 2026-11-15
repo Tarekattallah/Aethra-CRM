@@ -1,0 +1,32 @@
+# Backend only. The frontend runs on Vercel; MongoDB Atlas hosts data and uploads.
+services:
+  - type: web
+    name: aethra-crm-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    branch: main
+    rootDir: server
+    buildCommand: npm ci --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: '22'
+      - key: NODE_ENV
+        value: production
+      - key: UPLOAD_STORAGE
+        value: mongodb
+      - key: TRUST_PROXY_HOPS
+        value: '1'
+      - key: BUSINESS_TIMEZONE
+        value: Africa/Cairo
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: JWT_SECRET
+        generateValue: true
+      - key: MONGODB_URI
+        sync: false
+      - key: CLIENT_URL
+        sync: false

@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawn, ChildProcess } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdtemp, rm } from 'node:fs/promises';
+import { mkdtemp, rm, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import net from 'node:net';
@@ -151,6 +151,39 @@ test('acknowledge and contact follow the order and are not repeated', async () =
 });
 
 let file: any;
+
+test('MongoDB uploads survive loss of temporary files with private downloads and audio ranges', async () => {
+  const previous = process.env.UPLOAD_STORAGE;
+  process.env.UPLOAD_STORAGE = 'mongodb';
+  try {
+    const owner = await User.findById(engineer.id);
+    const bytes = Buffer.from('5249464608000000574156456162636465666768', 'hex');
+    const form = new FormData(); form.append('file', new Blob([bytes], {type:'audio/wav'}), 'voice.wav');
+    const upload = await fetch(base+'/api/upload', {method:'POST', body:form, headers:{Authorization:`Bearer ${token(owner)}`}});
+    assert.equal(upload.status,200); const uploaded = (await upload.json() as any).data.file;
+    const {Upload} = await import('../src/models/Upload.js');
+    const stored = await Upload.findOne({filename:uploaded.filename});
+    assert.equal(stored?.storage,'mongodb'); assert.ok(stored?.storageId);
+    await assert.rejects(access(path.join(process.env.UPLOAD_DIR!, uploaded.filename)));
+    const url = base+'/api/files/'+uploaded.filename;
+    assert.equal((await fetch(url)).status,401);
+    assert.equal((await fetch(url, {headers:{Authorization:`Bearer ${token(await User.findById(other.id))}`}})).status,404);
+    const headers = {Authorization:`Bearer ${token(owner)}`};
+    const full = await fetch(url,{headers}); assert.equal(full.status,200);
+    assert.deepEqual(Buffer.from(await full.arrayBuffer()),bytes);
+    assert.equal(full.headers.get('cache-control'),'private, no-store');
+    for (const [range,start,end] of [['bytes=2-6',2,7],['bytes=-4',bytes.length-4,bytes.length],['bytes=12-',12,bytes.length]] as const) {
+      const part = await fetch(url,{headers:{...headers,Range:range}}); assert.equal(part.status,206);
+      assert.equal(part.headers.get('content-range'),`bytes ${start}-${end-1}/${bytes.length}`);
+      assert.deepEqual(Buffer.from(await part.arrayBuffer()), bytes.subarray(start,end));
+    }
+    for (const range of ['bytes=100-','bytes=8-2','bytes=-0','bytes=0-1,3-5','bytes=-','bytes=abc']) {
+      const response = await fetch(url,{headers:{...headers,Range:range}}); assert.equal(response.status,416,range);
+      assert.equal(response.headers.get('content-range'),`bytes */${bytes.length}`);
+    }
+    const head = await fetch(url,{method:'HEAD',headers}); assert.equal(head.status,200); assert.equal(head.headers.get('content-length'),String(bytes.length));
+  } finally { if (previous === undefined) delete process.env.UPLOAD_STORAGE; else process.env.UPLOAD_STORAGE=previous; }
+});
 test('uploads preserve the public flow while protecting downloads and ownership', async () => {
   const form = new FormData(); form.append('file',new Blob(['%PDF-1.7\nCRM test'],{type:'application/pdf'}),'receipt.pdf');
   const uploaded = await fetch(base+'/api/upload',{method:'POST',body:form,headers:{Authorization:`Bearer ${token(engineer)}`}});
@@ -901,6 +934,28 @@ test('client portal identity is public to read and only the protected owner can 
   const image=await fetch(base+updated.data.data.brand.logoUrl);assert.equal(image.status,200);assert.match(image.headers.get('content-type')||'',/image\/png/);
   assert.equal((await api('/api/manage/client-brand','PUT',payload,root)).status,409);
   assert.equal((await api('/api/manage/client-brand','PUT',{...payload,revision:1,logoFilename:'../../secrets.png'},root)).status,400);
+});
+
+test('a portal logo stored in MongoDB remains public only through the selected branding endpoint',async()=>{
+  const previous=process.env.UPLOAD_STORAGE;process.env.UPLOAD_STORAGE='mongodb';
+  try {
+    const root=await User.findOne({email:'owner@test.example'});
+    const bytes=Buffer.from('89504e470d0a1a0a00000000','hex');
+    const uploadLogo=async()=>{const form=new FormData();form.append('file',new Blob([bytes],{type:'image/png'}),'logo.png');const response=await fetch(base+'/api/upload',{method:'POST',body:form,headers:{Authorization:`Bearer ${token(root)}`}});assert.equal(response.status,200);return (await response.json() as any).data.file;};
+    const selected=await uploadLogo();const unused=await uploadLogo();
+    const before=(await api('/api/public/branding')).data.data.brand;
+    const update=await api('/api/manage/client-brand','PUT',{companyName:before.companyName,whatsapp:before.whatsapp,revision:before.revision,logoFilename:selected.filename},root);
+    assert.equal(update.status,200);
+    await assert.rejects(access(path.join(process.env.UPLOAD_DIR!,selected.filename)));
+    const logo=await fetch(base+update.data.data.brand.logoUrl);assert.equal(logo.status,200);assert.equal(logo.headers.get('content-type'),'image/png');assert.deepEqual(Buffer.from(await logo.arrayBuffer()),bytes);
+    assert.equal((await fetch(base+'/api/files/'+unused.filename)).status,401);
+    assert.equal((await fetch(base+'/uploads/'+selected.filename)).status,404);
+    const fake=new FormData();fake.append('file',new Blob(['not a png'],{type:'image/png'}),'invalid.png');
+    const {Upload}=await import('../src/models/Upload.js');const count=await Upload.countDocuments();
+    const bucket=new mongoose.mongo.GridFSBucket(mongoose.connection.db!,{bucketName:'crmUploads'});const blobs=await bucket.find({}).toArray();
+    assert.equal((await fetch(base+'/api/upload',{method:'POST',body:fake})).status,400);
+    assert.equal(await Upload.countDocuments(),count);assert.equal((await bucket.find({}).toArray()).length,blobs.length);
+  } finally {if(previous===undefined)delete process.env.UPLOAD_STORAGE;else process.env.UPLOAD_STORAGE=previous;}
 });
 
 test('new role permissions control intake, desk, financial recording and execution independently',async()=>{

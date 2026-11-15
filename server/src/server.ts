@@ -32,7 +32,7 @@ import mongoose from 'mongoose';
 import { authenticate, browserSession } from './middlewares/auth.middleware.js';
 import { canDownload } from './services/upload.service.js';
 import { checkAndReassignStaleLeads } from './services/sla.service.js';
-import { uploadDir } from './middlewares/upload.middleware.js';
+import { sendStoredUpload } from './services/file-storage.service.js';
 
 dotenv.config();
 
@@ -41,6 +41,9 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const proxyHops = Number(process.env.TRUST_PROXY_HOPS || 0);
+if (!Number.isInteger(proxyHops) || proxyHops < 0 || proxyHops > 5) throw new Error('Invalid TRUST_PROXY_HOPS');
+if (proxyHops) app.set('trust proxy', proxyHops);
 
 // الحماية والـ Middlewares الأساسية
 app.use(helmet());
@@ -51,6 +54,7 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api', (req, res, next) => {
+  res.setHeader('Cache-Control', 'private, no-store');
   if (Object.values(req.query).some(v => typeof v !== 'string')) {
     res.status(400).json({ success: false, message: 'معاملات البحث يجب أن تكون نصوصاً مفردة.' }); return;
   }
@@ -73,7 +77,7 @@ app.get('/api/files/:filename', browserSession, authenticate, async (req, res, n
     if (!/^[\w-]+\.[a-z\d]+$/i.test(filename) || !await canDownload(req, filename)) {
       res.status(404).json({ success: false, message: 'الملف غير موجود أو غير متاح لك.' }); return;
     }
-    res.download(path.join(uploadDir, filename), filename, error => { if (error) next(error); });
+    await sendStoredUpload(req, res, filename);
   } catch (error) { next(error); }
 });
 

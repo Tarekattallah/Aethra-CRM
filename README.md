@@ -222,7 +222,7 @@ npm --prefix client run build
 npm --prefix server test
 ```
 
-The integration suite currently contains **76 tests** covering intake, routing, account boundaries, role changes, protected accounts, files, work-order separation, payments, execution teams, and branding. Tests start an isolated MongoDB process and remove only their temporary data.
+The integration suite currently contains **78 tests** covering intake, routing, account boundaries, role changes, protected accounts, files, work-order separation, payments, execution teams, and branding. This includes MongoDB-backed uploads, audio byte ranges, and public-logo boundaries. Tests start an isolated MongoDB process and remove only their temporary data.
 
 If `mongod` is not available at the default location, set `MONGOD_BINARY`. For example, in PowerShell:
 
@@ -235,10 +235,13 @@ The optional `server/test/preview.ts` runner creates a disposable UI preview. It
 
 ## Deployment notes
 
+- Target stack: **Vercel frontend + Render API + MongoDB Atlas data and uploads**. Follow the [deployment guide](docs/DEPLOYMENT.md).
+- The backend [Render Blueprint](render.yaml) builds the `server` directory, checks database readiness at `/api/health`, and stores uploads in MongoDB GridFS with `UPLOAD_STORAGE=mongodb`.
+- Generate `client/vercel.json` with `node scripts/configure-vercel.mjs https://YOUR-ACTUAL-API.onrender.com` before importing the `client` directory into Vercel. The generated configuration forwards `/api` to Render on the frontend's public origin and provides SPA routing.
 - Build the client and API, then run Express with `npm --prefix server start`.
 - Serve `client/dist` with SPA fallback and forward `/api` to Express on the same public origin. Vite's proxy is a development feature.
 - Configure HTTPS, `NODE_ENV=production`, database access, the signing secret, and `CLIENT_URL` for the deployed environment.
-- Persist and back up MongoDB data and uploads independently of application builds.
+- Back up MongoDB data, including the `crmUploads.files` and `crmUploads.chunks` collections. Local development keeps filesystem uploads by default; existing local files require migration before switching a populated installation to GridFS.
 - Voice requests require staff coordination; this repository does not call an external speech-to-text service.
 - Receipts record confirmed payment activity. The application does not process payments through a payment gateway.
 
