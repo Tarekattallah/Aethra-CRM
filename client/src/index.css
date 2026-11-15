@@ -1,0 +1,153 @@
+@import './brand-tokens.css';
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    overflow-x: hidden;
+  }
+
+  body {
+    background-color: #EEF2F8;
+    color: #0B1426;
+    font-family: 'IBM Plex Sans Arabic', 'Cairo', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+    min-width: 0;
+  }
+
+  /* Custom subtle modern scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--aethra-paper);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--aethra-control-border);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1AD6F7;
+  }
+}
+
+/* The application keeps its light layout and uses a night header/sidebar. */
+h1, h2, h3, h4, h5, h6, button, nav {
+  font-family: Outfit, 'IBM Plex Sans Arabic', Cairo, sans-serif;
+  font-weight: 600;
+}
+button, input:not([type='checkbox']):not([type='radio']), select, textarea {
+  border-radius: var(--aethra-radius-control) !important;
+}
+:is(input, select, textarea):not([type='checkbox']):not([type='radio']) {
+  border-color: var(--aethra-control-border);
+}
+button:disabled { cursor: not-allowed; }
+input::placeholder, textarea::placeholder { color: var(--aethra-muted); opacity: 1; }
+button.bg-aethra-cyan:hover { background-color: var(--aethra-cyan-hover); }
+button.bg-aethra-cyan:active { background-color: var(--aethra-cyan-pressed); }
+[data-sonner-toast] { border-radius: var(--aethra-radius-card) !important; box-shadow: none !important; }
+[data-sonner-toast][data-type='success'] { color: var(--aethra-success) !important; }
+[data-sonner-toast][data-type='warning'] { color: var(--aethra-warning) !important; }
+[data-sonner-toast][data-type='error'] { color: var(--aethra-danger) !important; }
+[data-sonner-toast][data-type='info'] { color: var(--aethra-link) !important; }
+:where(button, a, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--aethra-cyan) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--aethra-night) !important;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--aethra-link) !important; }
+.border-2 { border-width: 1px; }
+.lucide { stroke-width: 1.75; }
+.text-slate-300, .text-slate-400, .text-slate-500, .text-stone-400, .text-gray-400 { color: var(--aethra-muted); }
+.aethra-night-surface { background-color: var(--aethra-night); color: var(--aethra-paper); }
+.aethra-night-surface :is(.text-slate-300,.text-slate-400,.text-slate-500) { color: #B7C7DC; }
+.aethra-night-surface .aethra-logo { color: var(--aethra-cyan); }
+.aethra-night-surface .aethra-logo__subtitle { color: #B7C7DC; }
+.aethra-logo {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  gap: var(--logo-gap);
+  padding: var(--logo-clear-space);
+  vertical-align: middle;
+}
+.aethra-logo__mark { width: var(--logo-size); height: var(--logo-size); flex-shrink: 0; }
+.aethra-logo__type { display: flex; flex-direction: column; align-items: flex-start; }
+.aethra-logo__wordmark {
+  font-family: Outfit, sans-serif;
+  font-size: calc(var(--logo-size) * .84);
+  font-weight: 400;
+  letter-spacing: .01em;
+  line-height: 1;
+}
+.aethra-logo__subtitle { font-size: 10px; line-height: 1.6; margin-top: 5px; color: var(--aethra-muted); max-width: 210px; }
+.aethra-loader { display: inline-flex; width: 28px; height: 28px; color: var(--aethra-link); vertical-align: middle; flex-shrink: 0; }
+.aethra-loader svg { width: 100%; height: 100%; }
+.aethra-loader__orbit { transform-origin: center; animation: aethra-orbit 1.1s linear infinite; }
+.aethra-night-surface .aethra-loader { color: var(--aethra-cyan); }
+@keyframes aethra-orbit { to { transform: rotate(360deg); } }
+@media (max-width: 639px) {
+  .aethra-logo--responsive .aethra-logo__type { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .aethra-loader__orbit { animation: none; }
+}
+
+/* Touch friendly mobile utility */
+@media (max-width: 640px) {
+  input, select, textarea, button {
+    font-size: 16px !important; /* Prevents iOS auto-zoom on input focus */
+  }
+}
+
+/* Public intake: one script-appropriate family, readable copy and logical direction. */
+.public-site {
+  --public-font: 'IBM Plex Sans Arabic', 'Segoe UI', sans-serif;
+  font-family: var(--public-font);
+  font-size: 1rem;
+  line-height: 1.75;
+  font-weight: 400;
+  font-synthesis: none;
+}
+.public-site[lang='en'] { --public-font: Outfit, 'Segoe UI', sans-serif; line-height: 1.65; }
+.public-site :is(h1,h2,h3,h4,h5,h6,button,nav,input,select,textarea) { font-family: var(--public-font); }
+.public-site :is(h1,h2,h3,h4,h5,h6) { font-weight: 600; }
+.public-site h1 { font-size: clamp(1.75rem, 3.5vw, 2.25rem); line-height: 1.5; }
+.public-site h2 { font-size: 1.375rem; line-height: 1.6; }
+.public-site h3 { font-size: 1.0625rem; line-height: 1.65; }
+.public-site .text-sm { font-size: 1rem; line-height: 1.75; }
+.public-site :is(.text-xs,.text-\[10px\],.text-\[11px\]) { font-size: .875rem; line-height: 1.65; }
+.public-site :is(input,select,textarea):not([type='checkbox']):not([type='radio']) {
+  font-size: 1rem !important;
+  line-height: 1.65;
+  min-height: 48px;
+  font-weight: 400;
+}
+.public-site button { font-size: 1rem !important; line-height: 1.5; min-height: 44px; }
+.public-site :is(input[type='radio'],input[type='checkbox']) { accent-color: var(--aethra-link); width: 18px; height: 18px; flex-shrink: 0; }
+.public-site .public-hero .text-slate-300 { color: #CBD5E1; }
+.public-site .public-hero p { max-width: 65ch; }
+.public-site[dir='ltr'] :is(.lucide-arrow-left,.lucide-arrow-right) { transform: scaleX(-1); }
+.public-site .public-language-switch { font-family: Outfit, 'IBM Plex Sans Arabic', sans-serif; white-space: nowrap; }
+.public-site .font-mono { font-family: ui-monospace, Consolas, monospace; }
+.public-site .aethra-logo__subtitle { font-size: .875rem; line-height: 1.5; }
+.public-notifications { font-family: 'IBM Plex Sans Arabic', 'Segoe UI', sans-serif; }
+.public-notifications.public-en { font-family: Outfit, 'Segoe UI', sans-serif; }
+.public-notifications [data-sonner-toast] { font-family: inherit; font-size: 1rem; line-height: 1.65; }
+.public-site :is(summary,label) { overflow-wrap: anywhere; }
+.public-site main { min-width: 0; }
+.public-site [role='alert'] { color: #991B1B; }
+
+/* Readable internal controls while keeping dense operational tables usable. */
+.internal-site :is(input,select,textarea) {font-size:14px;line-height:1.7;}
+.admin-navigation-scroll { scrollbar-width: thin; scrollbar-color: #3D506B transparent; }
+.admin-navigation-scroll::-webkit-scrollbar-track { background: transparent; }
+.admin-navigation-scroll::-webkit-scrollbar-thumb { background: #3D506B; border-radius: 8px; }
+.internal-site :is(.text-\[9px\],.text-\[10px\],.text-\[11px\]) {font-size:12px;line-height:1.65;}
+.internal-site table :is(td,th) {font-size:13px;line-height:1.7;}
+.internal-site > header {flex-shrink:0;}

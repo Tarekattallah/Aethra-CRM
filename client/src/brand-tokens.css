@@ -1,0 +1,57 @@
+@font-face {
+  font-family: 'Outfit';
+  src: url('/brand/fonts/outfit.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/brand/fonts/ibm-plex-arabic/IBMPlexSansArabic-Regular.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/brand/fonts/ibm-plex-arabic/IBMPlexSansArabic-Medium.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'IBM Plex Sans Arabic';
+  src: url('/brand/fonts/ibm-plex-arabic/IBMPlexSansArabic-SemiBold.ttf') format('truetype');
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+:root {
+  --aethra-night: #07142B;
+  --aethra-cyan: #1AD6F7;
+  --aethra-ink: #0B1426;
+  --aethra-black: #0A0D12;
+  --aethra-paper: #EEF2F8;
+  --aethra-white: #FFFFFF;
+  --aethra-night-rgb: 7 20 43;
+  --aethra-cyan-rgb: 26 214 247;
+  --aethra-ink-rgb: 11 20 38;
+  --aethra-black-rgb: 10 13 18;
+  --aethra-paper-rgb: 238 242 248;
+  --aethra-white-rgb: 255 255 255;
+  --aethra-cyan-hover: #43DDF9;
+  --aethra-cyan-pressed: #17C1DE;
+  --aethra-cyan-subtle: rgb(26 214 247 / 12%);
+  --aethra-link: #006178;
+  --aethra-muted: #52647C;
+  --aethra-border: #D5DEEB;
+  --aethra-control-border: #7B8DA5;
+  --aethra-night-raised: #14243C;
+  --aethra-success: #137A45;
+  --aethra-warning: #92400E;
+  --aethra-danger: #BE123C;
+  --aethra-radius-control: 8px;
+  --aethra-radius-card: 12px;
+}
