@@ -222,7 +222,7 @@ npm --prefix client run build
 npm --prefix server test
 ```
 
-The integration suite currently contains **78 tests** covering intake, routing, account boundaries, role changes, protected accounts, files, work-order separation, payments, execution teams, and branding. This includes MongoDB-backed uploads, audio byte ranges, and public-logo boundaries. Tests start an isolated MongoDB process and remove only their temporary data.
+The integration suite currently contains **79 tests** covering intake, routing, account boundaries, role changes, protected accounts, files, work-order separation, payments, execution teams, and branding. This includes MongoDB-backed uploads, audio byte ranges, public-logo boundaries, and clean startup without demo data. Tests start an isolated MongoDB process and remove only their temporary data.
 
 If `mongod` is not available at the default location, set `MONGOD_BINARY`. For example, in PowerShell:
 

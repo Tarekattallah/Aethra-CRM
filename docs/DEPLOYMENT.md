@@ -14,6 +14,8 @@ Existing installations need a verified database migration. Preserve record IDs, 
 
 For an empty installation, initialize only the owner account using the documented bootstrap command. Do not run demo seeding on production or replace existing accounts.
 
+Application startup creates missing built-in role definitions without adding demo users, clients, tracks or services. Existing role permissions are retained. For a fresh installation that keeps only existing administrator logins, copy only those two account records and retain their password hashes; leave historical work data in the source installation.
+
 ## 2. Deploy the API on Render
 
 Use [render.yaml](../render.yaml) from the repository's `main` branch and the intended Render workspace. The Blueprint defines one API service; the database remains in Atlas and the frontend remains in Vercel.

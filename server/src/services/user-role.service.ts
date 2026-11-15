@@ -3,7 +3,7 @@ import { IUser, UserRole } from '../models/User.js';
 import { idOf } from '../utils/access.js';
 import { ADMIN_OPERATIONAL_PERMISSIONS } from '../utils/permissions.js';
 
-const defaults: Record<string, string[]> = {
+export const defaultRolePermissions: Record<string, string[]> = {
   ENGINEER: ['leads:view_own', 'leads:edit_technical','routing:receive','leads:create_marketing','leads:view_submitted','desk:use','payments:record','execution:view','execution:request','execution:message'],
   TEAM_LEADER: ['leads:view_track','leads:view_own','leads:edit_technical','routing:receive','leads:create_marketing','leads:view_submitted','desk:use','payments:record','execution:view','execution:request','execution:message','execution:manage','execution:complete'],
   STAFF: ['leads:view_own', 'leads:create_marketing','voice:review','leads:view_submitted','desk:use'],
@@ -22,6 +22,6 @@ export async function resolveUserRole(input: {role?: string; roleId?: string; pe
   if (!selected && !Object.values(UserRole).includes(role as UserRole)) throw Object.assign(new Error('الدور غير موجود.'), {status: 400});
   const roleId = input.roleId === '' ? undefined : selected?._id;
   const changed = !existing || role !== existing.role || idOf(roleId) !== idOf(existing.roleId);
-  return {role, roleId, permissions: input.permissions ?? (changed ? selected?.permissions || defaults[role] || [] : existing!.permissions),
+  return {role, roleId, permissions: input.permissions ?? (changed ? selected?.permissions || defaultRolePermissions[role] || [] : existing!.permissions),
     permissionsSource: input.permissions !== undefined ? 'CUSTOM' as const : changed ? 'ROLE' as const : existing?.permissionsSource};
 }

@@ -2,6 +2,7 @@ import executionRoutes from './routes/execution.routes.js';
 import clientBrandRoutes from './routes/client-brand.routes.js';
 import workOrderRoutes from './routes/work-order.routes.js';
 import { upgradePermissionCatalog } from './services/permission-catalog.service.js';
+import { initializeSystemRoles } from './services/system-roles.service.js';
 import workRoutes from './routes/work.routes.js';
 import intakeManagementRoutes from './routes/intake-management.routes.js';
 import express from 'express';
@@ -124,6 +125,7 @@ async function startServer() {
   try {
     getJwtSecret();
     await connectDB();
+    await initializeSystemRoles();
     await upgradePermissionCatalog();
     await backfillCustomerProfiles();
     const slaTimer = setInterval(() => {

@@ -990,3 +990,19 @@ test('new role permissions control intake, desk, financial recording and executi
   const paid=await api(`/api/leads/${request.id}/confirm-payment`,'POST',{amount:100,currency:'EGP',paymentType:'FULL',receiptUrl:receipt.url},finance);assert.equal(paid.status,200,JSON.stringify(paid.data));
   assert.equal((await api(`/api/leads/${request.id}/technical-intake`,'POST',{projectScope:'محاولة تعديل فني من المالية'},finance)).status,403);
 });
+
+test('startup adds missing system roles without demo data or restoring reduced permissions',async()=>{
+  const {initializeSystemRoles}=await import('../src/services/system-roles.service.js');
+  const {Role}=await import('../src/models/Role.js');
+  const adminRole=await Role.findOne({slug:'ADMIN'});assert.ok(adminRole);
+  const beforeUsers=await User.countDocuments(),beforeLeads=await Lead.countDocuments(),beforeTracks=await Track.countDocuments();
+  const beforeOwners=await Role.countDocuments({slug:'SUPER_ADMIN'});
+  const before=[...adminRole.permissions];
+  await Role.updateOne({_id:adminRole._id},{$set:{permissions:['reports:view']}});
+  await initializeSystemRoles();await initializeSystemRoles();
+  assert.equal(await Role.countDocuments({slug:{$in:['ADMIN','TEAM_LEADER','ENGINEER','MARKETING','STAFF']}}),5);
+  assert.equal(await Role.countDocuments({slug:'SUPER_ADMIN'}),beforeOwners);
+  assert.deepEqual((await Role.findById(adminRole._id))!.permissions,['reports:view']);
+  await Role.updateOne({_id:adminRole._id},{$set:{permissions:before}});
+  assert.equal(await User.countDocuments(),beforeUsers);assert.equal(await Lead.countDocuments(),beforeLeads);assert.equal(await Track.countDocuments(),beforeTracks);
+});
